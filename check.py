@@ -42,6 +42,16 @@ def get(url, **kw):
     return r
 
 
+def text_of(r):
+    """Decode a response, honouring the page's own charset (Jalan is Shift_JIS)."""
+    head = r.content[:2000].decode("ascii", "ignore").lower()
+    if "shift_jis" in head or "shift-jis" in head or "sjis" in head:
+        return r.content.decode("cp932", "replace")
+    if "euc-jp" in head:
+        return r.content.decode("euc_jp", "replace")
+    return r.content.decode("utf-8", "replace")
+
+
 # ---------------------------------------------------------------- Rakuten
 
 def check_rakuten(night):
@@ -111,6 +121,7 @@ def _find_key(obj, key):
 
 # ------------------------------------------------------------------ Jalan
 
+JALAN_ENABLED = False  # turned on once the page markers are confirmed
 JALAN_FULL = ["条件に合う宿泊プランはありません", "ご指定の条件に合う", "該当するプランがありません",
               "空室がありません", "満室"]
 
@@ -129,14 +140,14 @@ def check_jalan(night):
         except requests.RequestException as e:
             errors.append(f"{h['name']}: {e}")
             continue
-        r.encoding = r.apparent_encoding if r.encoding in (None, "ISO-8859-1") else r.encoding
-        save_probe(f"jalan_{h['jalan']}_{night['checkin']}.html", r.text)
+        html = text_of(r)
+        save_probe(f"jalan_{h['jalan']}_{night['checkin']}.html", html)
         if not r.ok:
             errors.append(f"{h['name']}: HTTP {r.status_code}")
             continue
-        if jalan_has_rooms(r.text):
+        if JALAN_ENABLED and jalan_has_rooms(html):
             found.append({"hotel": h["name"], "source": "Jalan", "url": url,
-                          "price": _first_price(r.text)})
+                          "price": _first_price(html)})
     return found, "; ".join(errors) or None
 
 
@@ -172,20 +183,62 @@ def check_own(night):
 
 
 def _own_nj(slug, night):
-    """nj-yoyaku.net: the plan page shows a month calendar (※ = open, × = full)."""
-    url = f"https://www.nj-yoyaku.net/{slug}/plan.aspx?PID=-1"
+    """nj-yoyaku.net month calendar: each day cell is "<day><br />mark", × = full."""
+    d = date.fromisoformat(night["checkin"])
+    url = (f"https://www.nj-yoyaku.net/{slug}/re_calendar.ashx"
+           f"?TDT={d.year}{d.month:02d}01&NZ={CONFIG['adults']}")
     r = get(url)
-    save_probe(f"nj_{slug}_{night['checkin']}.html", r.text)
+    html = text_of(r)
+    save_probe(f"nj_{slug}_{night['checkin']}_cal.html", html)
     r.raise_for_status()
-    return None  # parser enabled after the first probe run confirms the markup
+    if f"{d.year}年{d.month}月" not in html:
+        raise ValueError("calendar did not return the requested month")
+    m = re.search(rf">{d.day}<br\s*/?>([^<]*)<", html)
+    if not m:
+        raise ValueError(f"day {d.day} not found in calendar")
+    mark = m.group(1).strip().replace("\u3000", "")
+    if not mark or mark in ("×", "✕", "-", "－"):
+        return None
+    return {"url": f"https://www.nj-yoyaku.net/{slug}/plan.aspx?PID=-1",
+            "price": None, "note": f"官網日曆標示「{mark}」"}
+
+
+BAN_EMPTY = ["ご希望の条件に該当するプランがございません", "該当するプランがありません",
+             "空室がございません", "満室"]
 
 
 def _own_489ban(slug, night):
-    url = f"https://reserve.489ban.net/client/{slug}/0/plan"
-    r = get(url)
-    save_probe(f"489ban_{slug}_{night['checkin']}.html", r.text)
+    """489ban: run the plan search for the date, then read the plan list JSON."""
+    base = f"https://reserve.489ban.net/client/{slug}/0"
+    s = requests.Session()
+    s.headers.update(session.headers)
+    page = s.get(f"{base}/plan", timeout=30)
+    page.raise_for_status()
+    token = re.search(r'name="csrf-token" content="([^"]+)"', page.text).group(1)
+    ids = re.findall(r'name="guests\[(\d+)\]\[adult\]"', page.text)
+    params = {"date": night["checkin"], "numberOfNights": 1, "roomCount": CONFIG["rooms"]}
+    # split adults over the guest types (male/female); totals are what count
+    for i, gid in enumerate(ids):
+        params[f"guests[{gid}][adult]"] = CONFIG["adults"] // len(ids) + (1 if i < CONFIG["adults"] % len(ids) else 0)
+    time.sleep(1.5)
+    search = s.get(f"{base}/plan/search", params=params, timeout=30)
+    save_probe(f"489ban_{slug}_{night['checkin']}_search.html", search.text)
+    search.raise_for_status()
+    time.sleep(1.5)
+    tok = re.search(r'name="csrf-token" content="([^"]+)"', search.text)
+    r = s.post(f"{base}/planlist", headers={"X-CSRF-TOKEN": tok.group(1) if tok else token,
+                                           "X-Requested-With": "XMLHttpRequest"}, timeout=60)
+    save_probe(f"489ban_{slug}_{night['checkin']}_planlist.json", r.text)
     r.raise_for_status()
-    return None  # parser enabled after the first probe run confirms the markup
+    plans = r.json().get("planList", "")
+    if not BAN_ENABLED or any(x in plans for x in BAN_EMPTY):
+        return None
+    if re.search(r"予約する|予約へ進む", plans):
+        return {"url": search.url, "price": _first_price(plans)}
+    return None
+
+
+BAN_ENABLED = False  # turned on once the plan list markup is confirmed
 
 
 # ------------------------------------------------------------- notifying
@@ -231,7 +284,7 @@ def main():
         n = f["night"]
         price = f" 約 {f['price']} 円" if f.get("price") else ""
         notify(f"有空房！{f['hotel']} {n['checkin'][5:]}→{n['checkout'][5:]}",
-               f"{f['source']}{price}，點開直接去訂。", f["url"])
+               f"{f['source']}{price}{('，' + f['note']) if f.get('note') else ''}，點開直接去訂。", f["url"])
         print("NEW:", f["hotel"], f["source"], n["checkin"], f["url"])
 
     for e in errors:

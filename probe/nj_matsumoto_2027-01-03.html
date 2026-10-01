@@ -1,0 +1,186 @@
+
+
+<!DOCTYPE html>
+<html>
+<head><meta http-equiv="X-UA-Compatible" content="IE=edge" /><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" /><meta charset="utf-8" /><meta name="robots" content="noindex, nofllow" /><title>
+	Web予約システム
+</title>
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+            w[l] = w[l] || []; w[l].push({
+                'gtm.start':
+                    new Date().getTime(), event: 'gtm.js'
+            }); var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-W3R6RH3');</script>
+    <!-- End Google Tag Manager -->
+    <script type="text/javascript" language="javascript">
+        function ShowThis(own) {
+            own.disabled = true;
+        }
+
+    </script>    
+    <link rel="stylesheet" href="css/common.css" />
+
+    <script src="./js/cal.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="css/jquery-ui.css" />
+    <script src="js/modernizr-2.6.2.min.js"></script>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.colorbox-min.js"></script>
+    <link href="css/colorbox.css" rel="stylesheet" type="text/css" /><link href="js/photoswipe/photoswipe.css" rel="stylesheet" />
+    <script src="js/photoswipe/jquery.photoswipe.js"></script>
+    <script>
+        ; (function ($) {
+            $(function () {
+                $('a.swipe').photoSwipe();
+            });
+        })(jQuery);
+    </script>
+    <script>
+        $(function () {
+            $(".inline_box").colorbox({
+                inline: true,
+                initialWidth: 800,
+                maxWidth: '100%'
+            });
+        });
+
+    </script>
+
+
+    <script src="js/jquery-ui.min.js"></script>
+    <script src="js/jquery.ui.datepicker-ja.min.js"></script>
+    <script>
+        $(function () {
+            if (!Modernizr.inputtypes['date']) {
+                $('input[type=date]').datepicker({
+                    dateFormat: 'yy-mm-dd'
+                });
+            }
+        //    var dt = new Date();
+        //    $("#date").val(formatDate(dt));
+        });
+    </script>
+    <script type="text/javascript" src="./js/util.js"></script>
+    <script type="text/javascript" src="./js/cnt_slide.js"></script>
+    <script type="text/javascript" src="./js/jquery.autoKana.js"></script>
+    
+
+    <script type='text/javascript'>
+    <!--
+        function openTDT() {
+            var strYear = document.getElementById('date').value.split("-")[0];
+            var strMonth = document.getElementById('date').value.split("-")[1];
+            var strDay = document.getElementById('date').value.split("-")[2];
+            var strNinzu = document.forms[0].ddnin.value;
+            document.location = './plan.aspx?TDT=' + strYear + strMonth + strDay + '&NZ=' + strNinzu;
+        }
+        
+    -->
+    </script>
+</head>
+<body >
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-W3R6RH3" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+    <form method="post" action="./plan.aspx?PID=-1" id="form1" autocomplete="off">
+<div class="aspNetHidden">
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="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" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['form1'];
+if (!theForm) {
+    theForm = document.form1;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<div class="aspNetHidden">
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="8561ED20" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="LvmATkiAobJsOXJHRpggs4yl7JvpiLBTTbmkgLUDOF0BzXDyQw2IzIj7spmj38svV6NWpM/OO2QUa0LZUqTfV+DVd+ypLhsMTsx45akm4PHmDPDQ+n8FtTdgEZlc33fk4xuxbl16rMA6+g5Z/2DqEg6O0IFizdjUs8+UHkaFkuLO6gR924MQM6/vT/AZuIONB2IToYmbrMbVwpUl7141UMwP68YjlDlfuEZ9FoPqiKQ6w6bmcM0uZY8/cfXal7bPXuHiZPxq42KNGeGljBRZWg1TE4e4sNeY/51CpZ5WurOwZaG8WDBGTgifktHrNvZXWV2W9/aFizzYPSse0f7IW9FmUVAuSDbGgiY+IIj+HcBpj+zIvbYLJvGgPvi/5QvZHY7R2TYI8PJughhSfS0P5zPXPikPi8Jnso2PDAH1Yl+GoZh2ZIkNaHqjeOp0vzSv" />
+</div>
+        <div id="header">
+            <h1>旅館　松本</h1>
+        </div><!-- /#header -->
+        <div id="menu" class="container">
+                
+    <ul>
+        <li class="imano"><a href="./plan.aspx">プラン選択</a></li>
+        <li>日付選択</li>
+        <li>内容入力/確認</li>
+        <li>お客様情報入力</li>
+        <li>予約完了</li>
+    </ul>
+
+        </div><!-- /#menu -->
+        <div class="container section">
+            
+        <div class='search_nav'><div class='flex faround fbottom'><div><span>日付</span><input type='date' id='date' value='2026-10-01' /></div><div><span>一室当りのご利用人数</span>    <select name='ddnin' id='ddnin' class='ddl' ><option value='0' selected='selected'>指定なし</option><option value='1'>１名</option><option value='2'>２名</option><option value='3'>３名</option><option value='4'>４名</option><option value='5'>５名</option><option value='6'>６名</option><option value='7'>７名</option><option value='8'>８名</option><option value='9'>９名</option><option value='10'>１０名以上</option>	</select></div><div><a href='#' onclick='openTDT()' class='btn_search'>検索</a>
+</div></div>
+</div><div class='navnav flex faround fmiddle'><a href='#inline_content' class='inline_box '>カレンダー</a><a href='plan.aspx?HID=-1' class=''>部屋一覧</a><a href='plan.aspx?PID=-1' class=''>プラン一覧</a></div><div style='display:none;'><div id='inline_content' class='inline_content'><div id='jq-incalendar'><h5>2026年10月</h5><div class='calbtn flex faround flex_nowrap fmiddle '><div class='btn3_disabled'>前月</div><a onclick="in_calendar('20261001','0');" class="btn3" style="cursor:pointer;">当月</a><a onclick="in_calendar('20261101','0');" class="btn3" style="cursor:pointer;">次月</a></div><table><tr><th class='calsun'>日</th><th class='calday'>月</th><th class='calday'>火</th><th class='calday'>水</th><th class='calday'>木</th><th class='calday'>金</th><th class='calsat'>土</th></tr><tr><td class='calsun'>　<br />　</td><td class='calday'>　<br />　</td><td class='calday'>　<br />　</td><td class='calday'>　<br />　</td><td class='calday'>1<br />×</td><td class='calday'>2<br />×</td><td class='calsat'>3<br />×</td></tr><tr><td class='calsun'>4<br />×</td><td class='calday'>5<br />×</td><td class='calday'>6<br />×</td><td class='calday'>7<br />×</td><td class='calday'>8<br />×</td><td class='calday'>9<br />×</td><td class='calsat'>10<br />×</td></tr><tr><td class='calsun'>11<br />×</td><td class='calday'>12<br />×</td><td class='calday'>13<br />×</td><td class='calday'>14<br />×</td><td class='calday'>15<br />×</td><td class='calday'>16<br />×</td><td class='calsat'>17<br />×</td></tr><tr><td class='calsun'>18<br />×</td><td class='calday'>19<br />×</td><td class='calday'>20<br />×</td><td class='calday'>21<br />×</td><td class='calday'>22<br />×</td><td class='calday'>23<br />×</td><td class='calsat'>24<br />×</td></tr><tr><td class='calsun'>25<br />×</td><td class='calday'>26<br />×</td><td class='calday'>27<br />×</td><td class='calday'>28<br />×</td><td class='calday'>29<br />×</td><td class='calday'>30<br />×</td><td class='calsat'>31<br />×</td></tr><tr></table></div></div></div>
+
+        </div><!-- /.section -->
+        <div id ="sub" class="container">
+            
+        </div>
+        <div id="main" class="container">
+            
+            
+    <div style="display:none;">
+    <div id="contMain_pnlSort" class="dsort flex fright">
+	
+        一室当りのご利用人数
+    <select name="ctl00$contMain$ddNinzu" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$contMain$ddNinzu\&#39;,\&#39;\&#39;)&#39;, 0)" id="contMain_ddNinzu">
+		<option selected="selected" value="0">指定なし</option>
+		<option value="1">１名</option>
+		<option value="2">２名</option>
+		<option value="3">３名</option>
+		<option value="4">４名</option>
+		<option value="5">５名</option>
+		<option value="6">６名</option>
+		<option value="7">７名</option>
+		<option value="8">８名</option>
+		<option value="9">９名</option>
+		<option value="10">１０名以上</option>
+
+	</select>
+        並べ替え
+    <select name="ctl00$contMain$ddSort" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$contMain$ddSort\&#39;,\&#39;\&#39;)&#39;, 0)" id="contMain_ddSort">
+		<option selected="selected" value="おすすめ順">おすすめ順</option>
+		<option value="MIN">お値段の安い順</option>
+		<option value="MAX">お値段の高い順</option>
+
+	</select>
+    
+</div>
+    </div>
+        
+        <p>　設定された条件でご利用できるプランがございません。<br />　条件を設定し直すか、宿にお問い合わせください。</p><br /><div style='text-align:center;'><a href='plan.aspx' class='btn'>予約ページトップ</a></div>
+
+        </div><!-- /#main -->
+        <div id="footMenu" class="container">
+            <ul class="flex fmiddle faround">
+                <li><a href='./plan.aspx'>予約トップ</a></li><li><a href='./yykKakunin.aspx'>予約確認</a></li><li><a href='util.aspx?FL=privacypolicy.inc' target='_blank'>プライバシーポリシー</a></li><li><a href='util.aspx?FL=yakkan.inc' target='_blank'>約款</a></li>
+            </ul>
+        </div><!-- /#footerMenu -->
+        <div id="footer" class="container">
+            <div class="copyright">Copyright (c) 2026 <a href='http://www.well-com.co.jp/' target='_blank'>Well-com</a>. All Rights Reserved.</div>
+        </div><!-- /#footer -->
+    </form>
+</body>
+</html>
