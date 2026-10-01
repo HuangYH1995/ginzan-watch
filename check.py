@@ -99,16 +99,23 @@ def check_rakuten(night):
         return [], last_err
 
     found = []
-    for basic in _find_key(r.json(), "hotelBasicInfo"):
-        no = basic.get("hotelNo")
-        h = hotels.get(no)
+    for entry in r.json().get("hotels", []):
+        parts = entry if isinstance(entry, list) else [entry]
+        basic = next((p["hotelBasicInfo"] for p in parts if "hotelBasicInfo" in p), {})
+        h = hotels.get(basic.get("hotelNo"))
         if not h:
             continue
+        rooms = [x for p in parts for x in p.get("roomInfo", [])]
+        totals = [x["dailyCharge"]["total"] for x in rooms if "dailyCharge" in x]
+        reserve = next((x["roomBasicInfo"].get("reserveUrl") for x in rooms if "roomBasicInfo" in x), None)
+        plan = next((x["roomBasicInfo"].get("planName") for x in rooms if "roomBasicInfo" in x), "")
         found.append({
             "hotel": h["name"],
             "source": "楽天",
-            "price": basic.get("hotelMinCharge"),
-            "url": basic.get("planListUrl") or f"https://hotel.travel.rakuten.co.jp/hotelinfo/plan/{no}",
+            "price": f"{min(totals):,}" if totals else None,
+            "price_label": "總價",
+            "note": plan[:40] if plan else None,
+            "url": reserve or basic.get("planListUrl"),
         })
     return found, None
 
@@ -273,7 +280,8 @@ def main():
     new = [v for k, v in now_open.items() if k not in state["open"]]
     for f in new:
         n = f["night"]
-        price = f" 每人約 {f['price']} 円起" if f.get("price") else ""
+        label = f.get("price_label", "每人約")
+        price = f" {label} {f['price']} 円起" if f.get("price") else ""
         notify(f"有空房！{f['hotel']} {n['checkin'][5:]}→{n['checkout'][5:]}",
                f"{f['source']}{price}{('，' + f['note']) if f.get('note') else ''}，點開直接去訂。", f["url"])
         print("NEW:", f["hotel"], f["source"], n["checkin"], f["url"])
