@@ -11,6 +11,9 @@ on:
       dates:
         description: "optional test check-in dates, comma separated (probe runs only)"
         default: ""
+      chain:
+        description: "keep re-dispatching itself about every 5 minutes"
+        default: "false"
 
 concurrency:
   group: check
@@ -18,11 +21,12 @@ concurrency:
 
 permissions:
   contents: write
+  actions: write
 
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -58,4 +62,13 @@ jobs:
           git config user.name "ginzan-watch"
           git config user.email "actions@users.noreply.github.com"
           git add state.json
-          git diff --cached --quiet || (git commit -m "update vacancy state" && git push)
+          git diff --cached --quiet || (git commit -m "update vacancy state" && git pull -q --rebase origin main && git push)
+      # GitHub's cron is unreliable for new repos, so a chained run waits and
+      # then starts the next one itself.
+      - name: Queue next check
+        if: always() && inputs.chain == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sleep 210
+          gh workflow run check.yml -R "$GITHUB_REPOSITORY" --ref main -f mode=normal -f chain=true
