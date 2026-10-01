@@ -8,6 +8,9 @@ on:
       mode:
         description: "normal, probe, or test-notify"
         default: normal
+      dates:
+        description: "optional test check-in dates, comma separated (probe runs only)"
+        default: ""
 
 concurrency:
   group: check
@@ -32,6 +35,7 @@ jobs:
           RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
           RAKUTEN_REFERER: ${{ secrets.RAKUTEN_REFERER }}
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          CHECK_DATES: ${{ inputs.mode == 'probe' && inputs.dates || '' }}
         run: |
           case "${{ inputs.mode }}" in
             probe) python check.py --probe ;;

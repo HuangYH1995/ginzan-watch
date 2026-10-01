@@ -20,6 +20,10 @@ import requests
 ROOT = os.path.dirname(os.path.abspath(__file__))
 CONFIG = json.load(open(os.path.join(ROOT, "config.json"), encoding="utf-8"))
 STATE_PATH = os.path.join(ROOT, "state.json")
+if os.environ.get("CHECK_DATES"):  # e.g. "2026-11-10,2026-11-11" for test runs
+    from datetime import timedelta
+    CONFIG["nights"] = [{"checkin": d, "checkout": str(date.fromisoformat(d) + timedelta(days=1))}
+                        for d in os.environ["CHECK_DATES"].split(",")]
 PROBE = "--probe" in sys.argv
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/128.0 Safari/537.36")
@@ -121,9 +125,7 @@ def _find_key(obj, key):
 
 # ------------------------------------------------------------------ Jalan
 
-JALAN_ENABLED = False  # turned on once the page markers are confirmed
-JALAN_FULL = ["条件に合う宿泊プランはありません", "ご指定の条件に合う", "該当するプランがありません",
-              "空室がありません", "満室"]
+JALAN_FULL = ["ご利用できるプランがない", "条件に合う宿泊プランはありません"]
 
 
 def check_jalan(night):
@@ -145,7 +147,10 @@ def check_jalan(night):
         if not r.ok:
             errors.append(f"{h['name']}: HTTP {r.status_code}")
             continue
-        if JALAN_ENABLED and jalan_has_rooms(html):
+        if "料金・宿泊プラン" not in html:
+            errors.append(f"{h['name']}: unexpected page (blocked?)")
+            continue
+        if jalan_has_rooms(html):
             found.append({"hotel": h["name"], "source": "Jalan", "url": url,
                           "price": _first_price(html)})
     return found, "; ".join(errors) or None
@@ -203,49 +208,26 @@ def _own_nj(slug, night):
             "price": None, "note": f"官網日曆標示「{mark}」"}
 
 
-BAN_EMPTY = ["ご希望の条件に該当するプランがございません", "該当するプランがありません",
-             "空室がございません", "満室"]
-
-
 def _own_489ban(slug, night):
-    """489ban: run the plan search for the date, then read the plan list JSON."""
+    """489ban: /plan/novacancy lists the dates that still have rooms."""
     base = f"https://reserve.489ban.net/client/{slug}/0"
-    s = requests.Session()
-    s.headers.update(session.headers)
-    page = s.get(f"{base}/plan", timeout=30)
-    page.raise_for_status()
-    token = re.search(r'name="csrf-token" content="([^"]+)"', page.text).group(1)
-    ids = re.findall(r'name="guests\[(\d+)\]\[adult\]"', page.text)
-    params = {"date": night["checkin"], "numberOfNights": 1, "roomCount": CONFIG["rooms"]}
-    # split adults over the guest types (male/female); totals are what count
-    for i, gid in enumerate(ids):
-        params[f"guests[{gid}][adult]"] = CONFIG["adults"] // len(ids) + (1 if i < CONFIG["adults"] % len(ids) else 0)
-    time.sleep(1.5)
-    search = s.get(f"{base}/plan/search", params=params, timeout=30)
-    save_probe(f"489ban_{slug}_{night['checkin']}_search.html", search.text)
-    search.raise_for_status()
-    time.sleep(1.5)
-    tok = re.search(r'name="csrf-token" content="([^"]+)"', search.text)
-    r = s.post(f"{base}/planlist", headers={"X-CSRF-TOKEN": tok.group(1) if tok else token,
-                                           "X-Requested-With": "XMLHttpRequest"}, timeout=60)
-    save_probe(f"489ban_{slug}_{night['checkin']}_planlist.json", r.text)
+    r = get(f"{base}/plan/novacancy?planType=1",
+            headers={"X-Requested-With": "XMLHttpRequest", "Referer": f"{base}/plan"})
+    save_probe(f"489ban_{slug}_novacancy.json", r.text)
     r.raise_for_status()
-    plans = r.json().get("planList", "")
-    if not BAN_ENABLED or any(x in plans for x in BAN_EMPTY):
+    open_dates = r.json()
+    if night["checkin"] not in open_dates:
         return None
-    if re.search(r"予約する|予約へ進む", plans):
-        return {"url": search.url, "price": _first_price(plans)}
-    return None
-
-
-BAN_ENABLED = False  # turned on once the plan list markup is confirmed
+    return {"url": (f"{base}/plan/search?date={night['checkin']}&numberOfNights=1"
+                    f"&roomCount={CONFIG['rooms']}"),
+            "price": None, "note": "官網空房日曆顯示可訂"}
 
 
 # ------------------------------------------------------------- notifying
 
 def notify(title, message, click=None):
     topic = os.environ.get("NTFY_TOPIC")
-    if not topic:
+    if not topic or PROBE:
         print("NTFY_TOPIC not set; would notify:", title, message)
         return
     body = {"topic": topic, "title": title, "message": message,
