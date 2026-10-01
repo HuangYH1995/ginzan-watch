@@ -203,7 +203,7 @@ def _own_nj(slug, night):
     html = text_of(r)
     save_probe(f"nj_{slug}_{night['checkin']}_cal.html", html)
     r.raise_for_status()
-    if f"{d.year}年{d.month}月" not in html:
+    if not re.search(rf"{d.year}年0?{d.month}月", html):
         raise ValueError("calendar did not return the requested month")
     m = re.search(rf">{d.day}<br\s*/?>([^<]*)<", html)
     if not m:
