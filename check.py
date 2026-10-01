@@ -157,14 +157,21 @@ def check_jalan(night):
 
 
 def jalan_has_rooms(html):
-    if any(s in html for s in JALAN_FULL):
+    if any(x in html for x in JALAN_FULL):
         return False
-    # Bookable plans render a reserve button per room
-    return bool(re.search(r"予約する|予約へ進む|空室あり", html))
+    return re.search(r"\d+\s*件の宿泊プランがありました", _plain(html)) is not None
+
+
+def _plain(html):
+    html = re.sub(r"(?s)<script.*?</script>|<style.*?</style>", "", html)
+    return re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", html))
 
 
 def _first_price(html):
-    m = re.search(r"([\d,]{4,})\s*円", html)
+    """Lowest per-adult price shown after the plan count (Jalan)."""
+    t = _plain(html)
+    t = t[t.find("件の宿泊プランがありました"):]
+    m = re.search(r"([\d,]{5,})円", t)
     return m.group(1) if m else None
 
 
@@ -264,7 +271,7 @@ def main():
     new = [v for k, v in now_open.items() if k not in state["open"]]
     for f in new:
         n = f["night"]
-        price = f" 約 {f['price']} 円" if f.get("price") else ""
+        price = f" 每人約 {f['price']} 円起" if f.get("price") else ""
         notify(f"有空房！{f['hotel']} {n['checkin'][5:]}→{n['checkout'][5:]}",
                f"{f['source']}{price}{('，' + f['note']) if f.get('note') else ''}，點開直接去訂。", f["url"])
         print("NEW:", f["hotel"], f["source"], n["checkin"], f["url"])
