@@ -76,9 +76,11 @@ def check_rakuten(night):
     }
     if os.environ.get("RAKUTEN_ACCESS_KEY"):
         params["accessKey"] = os.environ["RAKUTEN_ACCESS_KEY"]
-    headers = {}
-    if os.environ.get("RAKUTEN_REFERER"):
-        headers["Referer"] = os.environ["RAKUTEN_REFERER"]
+    # The Rakuten app is registered as a "Web" app whose allowed website is
+    # this repo, so send matching Referer/Origin headers.
+    referer = os.environ.get("RAKUTEN_REFERER") or "https://github.com/HuangYH1995/ginzan-watch"
+    origin = "/".join(referer.split("/")[:3])
+    headers = {"Referer": referer, "Origin": origin}
     endpoints = [
         "https://openapi.rakuten.co.jp/engine/api/Travel/VacantHotelSearch/20170426",
         "https://app.rakuten.co.jp/services/api/Travel/VacantHotelSearch/20170426",
