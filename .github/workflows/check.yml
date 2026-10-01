@@ -38,13 +38,18 @@ jobs:
             test-notify) python check.py --test-notify ;;
             *) python check.py ;;
           esac
-      - name: Save probe pages
+      - name: Save probe pages to the probe branch
         if: inputs.mode == 'probe'
-        uses: actions/upload-artifact@v4
-        with:
-          name: probe
-          path: probe/
+        run: |
+          git config user.name "ginzan-watch"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout -B probe
+          git add -f probe/
+          git commit -qm "probe pages"
+          git push -f origin probe
+          git checkout main
       - name: Save state
+        if: inputs.mode != 'probe' && inputs.mode != 'test-notify'
         run: |
           git config user.name "ginzan-watch"
           git config user.email "actions@users.noreply.github.com"
