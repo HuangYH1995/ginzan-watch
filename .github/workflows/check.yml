@@ -1,0 +1,52 @@
+name: check vacancies
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"   # GitHub runs this on a best-effort basis
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "normal, probe, or test-notify"
+        default: normal
+
+concurrency:
+  group: check
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests
+      - name: Check
+        env:
+          RAKUTEN_APP_ID: ${{ secrets.RAKUTEN_APP_ID }}
+          RAKUTEN_ACCESS_KEY: ${{ secrets.RAKUTEN_ACCESS_KEY }}
+          RAKUTEN_REFERER: ${{ secrets.RAKUTEN_REFERER }}
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          case "${{ inputs.mode }}" in
+            probe) python check.py --probe ;;
+            test-notify) python check.py --test-notify ;;
+            *) python check.py ;;
+          esac
+      - name: Save probe pages
+        if: inputs.mode == 'probe'
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe
+          path: probe/
+      - name: Save state
+        run: |
+          git config user.name "ginzan-watch"
+          git config user.email "actions@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet || (git commit -m "update vacancy state" && git push)

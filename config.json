@@ -1,0 +1,24 @@
+{
+  "nights": [
+    {"checkin": "2027-01-02", "checkout": "2027-01-03"},
+    {"checkin": "2027-01-03", "checkout": "2027-01-04"},
+    {"checkin": "2027-01-04", "checkout": "2027-01-05"}
+  ],
+  "adults": 2,
+  "rooms": 1,
+  "hotels": [
+    {"name": "能登屋旅館",         "rakuten": null,   "jalan": "321441", "own": {"type": "489ban", "id": "notoyaryokan"}},
+    {"name": "旅館 永澤平八",       "rakuten": null,   "jalan": "319755", "own": {"type": "nj", "id": "nagasawa"}},
+    {"name": "瀧見館",             "rakuten": 135388, "jalan": "316868", "own": {"type": "nj", "id": "takimikan"}},
+    {"name": "御宿 やなだ屋",       "rakuten": 166139, "jalan": "380332", "own": {"type": "nj", "id": "yanadaya"}},
+    {"name": "旅館 松本",           "rakuten": 52933,  "jalan": null,     "own": {"type": "nj", "id": "matsumoto"}},
+    {"name": "仙峡の宿 銀山荘",     "rakuten": 111234, "jalan": null,     "own": {"type": "nj", "id": "ginzanso"}},
+    {"name": "昭和館",             "rakuten": null,   "jalan": "331048", "own": {"type": "nj", "id": "showakan"}},
+    {"name": "古山閣",             "rakuten": 137447, "jalan": null,     "own": null},
+    {"name": "旅館 藤屋",           "rakuten": 68602,  "jalan": null,     "own": null},
+    {"name": "旅籠 いとうや",       "rakuten": 176672, "jalan": null,     "own": null},
+    {"name": "本館 古勢起屋",       "rakuten": 184539, "jalan": null,     "own": null},
+    {"name": "古勢起屋別館",        "rakuten": 111235, "jalan": null,     "own": null},
+    {"name": "クラノバ",           "rakuten": null,   "jalan": null,     "own": null}
+  ]
+}
