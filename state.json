@@ -1,6 +1,7 @@
 {
  "open": {
-  "Jalan|昭和館|2027-01-04": "https://www.jalan.net/yad331048/plan/?stayYear=2027&stayMonth=1&stayDay=4&stayCount=1&roomCount=1&adultNum=2"
+  "Jalan|昭和館|2027-01-02": "https://www.jalan.net/yad331048/plan/?stayYear=2027&stayMonth=1&stayDay=2&stayCount=1&roomCount=1&adultNum=2",
+  "官網|能登屋旅館|2027-01-04": "https://reserve.489ban.net/client/notoyaryokan/0/plan/search?date=2027-01-04&numberOfNights=1&roomCount=1"
  },
  "week": "2026-W48"
 }
